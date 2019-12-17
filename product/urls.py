@@ -1,0 +1,22 @@
+from django.urls import path
+
+from product import views
+
+category_list = views.CategoryViewSet.as_view({
+    'get': 'list',
+    'post': 'create',
+})
+category_detail = views.CategoryViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'partial_update',
+    'delete': 'destroy',
+})
+
+urlpatterns = [
+    path('categories/', category_list, name='category-list'),
+    path('categories/<int:pk>', category_detail, name='category-detail'),
+    path('products/', views.ProductList.as_view(), name='product-list'),
+    path('products/<int:pk>', views.ProductDetail.as_view(), name='product-detail'),
+    path('', views.api_root),
+]
