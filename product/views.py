@@ -1,4 +1,5 @@
 from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 # Function View
@@ -50,6 +51,9 @@ from product.serializers import CategorySerializer, ProductSerializer, CommentSe
 #         category.delete()
 #         return HttpResponse(status=204)
 
+
+# Todo: custom filter 구성
+
 # ViewSet
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -60,6 +64,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductList(APIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ['category', 'created']
 
     # list
     def get(self, request):
@@ -117,5 +123,5 @@ def api_root(request):
     return Response({
         'categories': reverse('category-list', request=request),
         'products': reverse('product-list', request=request),
+        'comments': reverse('comment-list', request=request),
     })
-
