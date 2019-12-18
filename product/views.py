@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import Http404
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 # Function View
@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
-from product.models import Category, Product
-from product.serializers import CategorySerializer, ProductSerializer
+from product.models import Category, Product, Comment
+from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer
 
 
 # # function based view - return JsonResponse
@@ -64,7 +64,9 @@ class ProductList(APIView):
     # list
     def get(self, request):
         categories = Product.objects.all()  # snippet queryset
-        serializer = ProductSerializer(categories, many=True)
+        # hyperlinked relation에서는 반드시 serializing 과정에서 context를 포함해야한다.
+        # viewset은 자동 처리
+        serializer = ProductSerializer(categories, many=True, context={'request': request})
         return Response(serializer.data)
 
     # create
@@ -86,7 +88,7 @@ class ProductDetail(APIView):
     # retrieve
     def get(self, request, pk):
         product = self.get_object(pk=pk)
-        serializer = ProductSerializer(product)
+        serializer = ProductSerializer(product, context={'request': request})
         return Response(serializer.data)
 
     # update
@@ -103,6 +105,11 @@ class ProductDetail(APIView):
         product = self.get_object(pk=pk)
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
 
 
 @api_view(['GET'])

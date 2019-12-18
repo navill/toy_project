@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from product.models import Category, Product
+from product.models import Category, Product, Comment
 
 
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
@@ -11,10 +11,18 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'id', 'name', 'products']
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    # category = serializers.HyperlinkedRelatedField(queryset=Category.objects.all(), many=True, view_name='category-list')
+class CommentSerializer(serializers.HyperlinkedModelSerializer):
+    product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'product', 'reply', 'body']
+
+
+class ProductSerializer(serializers.HyperlinkedModelSerializer):
     category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='name')
+    comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'category', 'name', 'description', 'price', 'quantity', 'created']
+        fields = ['id', 'category', 'name', 'description', 'price', 'quantity', 'created', 'comments']
