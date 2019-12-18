@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from accounts.models import User
 from product.models import Category, Product, Comment
 
 
@@ -13,10 +14,11 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
 class CommentSerializer(serializers.HyperlinkedModelSerializer):
     product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Comment
-        fields = ['id', 'product', 'reply', 'body']
+        fields = ['id', 'user', 'product', 'reply', 'body']
 
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):

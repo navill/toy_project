@@ -118,3 +118,4 @@ def api_root(request):
         'categories': reverse('category-list', request=request),
         'products': reverse('product-list', request=request),
     })
+
