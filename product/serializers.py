@@ -10,11 +10,9 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['url', 'id', 'name', 'products']
+        fields = ['url', 'id', 'name', 'products', 'parent']
 
 
-#
-# #
 class CommentSerializer(serializers.HyperlinkedModelSerializer):
     product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=serializers.CurrentUserDefault())
