@@ -1,11 +1,11 @@
-from django.http import Http404
+import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import api_view
 # Function View
+from rest_framework.generics import *
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.views import APIView
 
 from product.models import Category, Product, Comment
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer
@@ -51,66 +51,90 @@ from product.serializers import CategorySerializer, ProductSerializer, CommentSe
 #         category.delete()
 #         return HttpResponse(status=204)
 
+# 'DEFAULT_FILTER_BACKENDS': [
+#     'django_filters.rest_framework.DjangoFilterBackend',
+#     'rest_framework.filters.OrderingFilter',
+#     'rest_framework.filters.SearchFilter',
+# ]
+"""
+    ProductFilter
+    category: 카테고리별 필터
+    name: 제품 이름 필터
+    min_price & max_price: 가격 범위 필터
+    date_from & date_to: 제품이 등록된 기간 필터
+"""
+class ProductFilter(django_filters.rest_framework.FilterSet):
+    category = django_filters.AllValuesFilter(field_name='category__name')
+    min_price = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
+    max_price = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
+    date_from = django_filters.DateFilter(field_name='created', lookup_expr='gte')
+    date_to = django_filters.DateFilter(field_name='created', lookup_expr='lte')
 
-# Todo: custom filter 구성
+    class Meta:
+        model = Product
+        fields = ('category', 'name', 'min_price', 'max_price', 'date_from', 'date_to')
+
 
 # ViewSet
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    filter_fields = ('name', 'products')
 
 
 # API based view - Response(JsonResponse 포함)
-class ProductList(APIView):
+class ProductList(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    filter_class = ProductFilter
     filter_backends = [DjangoFilterBackend]
-    filter_fields = ['category', 'created']
 
-    # list
-    def get(self, request):
-        categories = Product.objects.all()  # snippet queryset
-        # hyperlinked relation에서는 반드시 serializing 과정에서 context를 포함해야한다.
-        # viewset은 자동 처리
-        serializer = ProductSerializer(categories, many=True, context={'request': request})
-        return Response(serializer.data)
+    # # list
+    # def get(self, request):
+    #     categories = Product.objects.all()  # snippet queryset
+    #     # hyperlinked relation에서는 반드시 serializing 과정에서 context를 포함해야한다.
+    #     # viewset은 자동 처리
+    #     serializer = ProductSerializer(categories, many=True, context={'request': request})
+    #     return Response(serializer.data)
+    #
+    # # create
+    # def post(self, request):
+    #     serializer = ProductSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=201)
+    #     return Response(serializer.errors, status=400)
 
-    # create
-    def post(self, request):
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
 
-
-class ProductDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Product.objects.get(pk=pk)
-        except Product.DeosNotExist:
-            raise Http404
-
-    # retrieve
-    def get(self, request, pk):
-        product = self.get_object(pk=pk)
-        serializer = ProductSerializer(product, context={'request': request})
-        return Response(serializer.data)
-
-    # update
-    def put(self, request, pk):
-        product = self.get_object(pk=pk)
-        serializer = ProductSerializer(product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # destroy
-    def delete(self, request, pk):
-        product = self.get_object(pk=pk)
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+class ProductDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    # def get_object(self, pk):
+    #     try:
+    #         return Product.objects.get(pk=pk)
+    #     except Product.DeosNotExist:
+    #         raise Http404
+    #
+    # # retrieve
+    # def get(self, request, pk):
+    #     product = self.get_object(pk=pk)
+    #     serializer = ProductSerializer(product, context={'request': request})
+    #     return Response(serializer.data)
+    #
+    # # update
+    # def put(self, request, pk):
+    #     product = self.get_object(pk=pk)
+    #     serializer = ProductSerializer(product, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #
+    # # destroy
+    # def delete(self, request, pk):
+    #     product = self.get_object(pk=pk)
+    #     product.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

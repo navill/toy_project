@@ -1,7 +1,7 @@
 from django.urls import include, path
 
 urlpatterns = [
-    path('products/', include('product.urls')),
+    path('shop/', include('product.urls')),
     path('accounts/', include('accounts.urls')),
 
     # path('rest-auth/', include('rest_auth.urls')),
