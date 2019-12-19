@@ -25,6 +25,6 @@ class Product(models.Model):
 class Comment(models.Model):
     product = models.ForeignKey(Product, related_name='comments', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='users', on_delete=models.CASCADE)
-    reply = models.ForeignKey('self', on_delete=models.SET_NULL, null=True)
+    parent = models.ForeignKey('self', related_name='parents', on_delete=models.SET_NULL, null=True, blank=True)
     body = models.CharField(max_length=100)
     created = models.DateField(auto_now_add=True)
