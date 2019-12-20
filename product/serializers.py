@@ -1,4 +1,3 @@
-from django.contrib.sites.models import Site
 from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
@@ -52,7 +51,6 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_absolute_detail_url(self, obj):
         request = self.context['request']
         http_host = request.META['HTTP_HOST']
-        port_number = request.META['SERVER_PORT']
         path = obj.get_absolute_url()
         url = 'http://{http_host}{path}'.format(http_host=http_host, path=path)
         return url

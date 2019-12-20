@@ -4,10 +4,12 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 # Function View
 from rest_framework.generics import *
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from product.models import Category, Product, Comment
+from product.permission import IsOwnerOrReadOnly, IsAdminUserOrReadOnly
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer
 
 # # function based view - return JsonResponse
@@ -50,11 +52,7 @@ from product.serializers import CategorySerializer, ProductSerializer, CommentSe
 #         category.delete()
 #         return HttpResponse(status=204)
 
-# 'DEFAULT_FILTER_BACKENDS': [
-#     'django_filters.rest_framework.DjangoFilterBackend',
-#     'rest_framework.filters.OrderingFilter',
-#     'rest_framework.filters.SearchFilter',
-# ]
+
 """
     ProductFilter
     category: 카테고리별 필터
@@ -62,6 +60,10 @@ from product.serializers import CategorySerializer, ProductSerializer, CommentSe
     min_price & max_price: 가격 범위 필터
     date_from & date_to: 제품이 등록된 기간 필터
 """
+
+
+class CategoryTreeFilter(django_filters.AllValuesFilter):
+    pass
 
 
 class ProductFilter(django_filters.rest_framework.FilterSet):
@@ -81,11 +83,13 @@ class CommentFilter(django_filters.rest_framework.FilterSet):
     reply = django_filters.AllValuesFilter(field_name='parent')
 
 
+
 # ViewSet
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_fields = ('name', 'products')
+    permission_classes = (IsAdminUserOrReadOnly,)
 
 
 # API based view - Response(JsonResponse 포함)
@@ -94,6 +98,8 @@ class ProductList(ListCreateAPIView):
     serializer_class = ProductSerializer
     filter_class = ProductFilter
     filter_backends = [DjangoFilterBackend]
+    permission_classes = (IsAdminUserOrReadOnly,)
+
 
     # # list
     # def get(self, request):
@@ -115,6 +121,7 @@ class ProductList(ListCreateAPIView):
 class ProductDetail(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = (IsAdminUserOrReadOnly,)
     # def get_object(self, pk):
     #     try:
     #         return Product.objects.get(pk=pk)
@@ -148,6 +155,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     filter_backends = [DjangoFilterBackend]
     filter_class = CommentFilter
+    # 작성자가 아닐경우 read only, 작성자일 경우 editable
+    permission_classes = (IsOwnerOrReadOnly,)
 
 
 @api_view(['GET'])

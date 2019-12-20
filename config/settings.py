@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'django_filters'
 ]
-SITE_ID = 1
+# SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -148,6 +148,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES
 }
+
+# 'DEFAULT_FILTER_BACKENDS': [
+#     'django_filters.rest_framework.DjangoFilterBackend',
+#     'rest_framework.filters.OrderingFilter',
+#     'rest_framework.filters.SearchFilter',
+# ]
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
