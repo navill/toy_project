@@ -10,7 +10,6 @@ from rest_framework.reverse import reverse
 from product.models import Category, Product, Comment
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer
 
-
 # # function based view - return JsonResponse
 # # function based view는 browsable API를 자동으로 제공하지 않는다.
 # @api_view(['GET', 'POST'])
@@ -63,6 +62,8 @@ from product.serializers import CategorySerializer, ProductSerializer, CommentSe
     min_price & max_price: 가격 범위 필터
     date_from & date_to: 제품이 등록된 기간 필터
 """
+
+
 class ProductFilter(django_filters.rest_framework.FilterSet):
     category = django_filters.AllValuesFilter(field_name='category__name')
     min_price = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
@@ -73,6 +74,11 @@ class ProductFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Product
         fields = ('category', 'name', 'min_price', 'max_price', 'date_from', 'date_to')
+
+
+class CommentFilter(django_filters.rest_framework.FilterSet):
+    product = django_filters.AllValuesFilter(field_name='product__name')
+    reply = django_filters.AllValuesFilter(field_name='parent')
 
 
 # ViewSet
@@ -140,6 +146,8 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_class = CommentFilter
 
 
 @api_view(['GET'])
