@@ -16,12 +16,13 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
-    detail_url = serializers.SerializerMethodField()
+    absolute_detail_url = serializers.SerializerMethodField()
+
     # detail_url = serializers.URLField(source='get_absolute_url', read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'product', 'parent', 'body','detail_url']
+        fields = ['id', 'user', 'product', 'parent', 'body', 'absolute_detail_url']
 
     def to_representation(self, instance):
         data = super(CommentSerializer, self).to_representation(instance)
@@ -48,10 +49,12 @@ class CommentSerializer(serializers.ModelSerializer):
             raise NotAuthenticated("Current user and writer do not match.")
         return instance
 
-    def get_detail_url(self, obj):
-        domain = Site.objects.get_current().domain
+    def get_absolute_detail_url(self, obj):
+        request = self.context['request']
+        http_host = request.META['HTTP_HOST']
+        port_number = request.META['SERVER_PORT']
         path = obj.get_absolute_url()
-        url = 'http://{domain}{path}'.format(domain=domain, path=path)
+        url = 'http://{http_host}{path}'.format(http_host=http_host, path=path)
         return url
 
 
