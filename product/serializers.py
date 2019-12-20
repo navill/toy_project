@@ -1,3 +1,4 @@
+from django.contrib.sites.models import Site
 from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
@@ -15,10 +16,12 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
+    detail_url = serializers.SerializerMethodField()
+    # detail_url = serializers.URLField(source='get_absolute_url', read_only=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'product', 'parent', 'body']
+        fields = ['id', 'user', 'product', 'parent', 'body','detail_url']
 
     def to_representation(self, instance):
         data = super(CommentSerializer, self).to_representation(instance)
@@ -44,6 +47,12 @@ class CommentSerializer(serializers.ModelSerializer):
         else:
             raise NotAuthenticated("Current user and writer do not match.")
         return instance
+
+    def get_detail_url(self, obj):
+        domain = Site.objects.get_current().domain
+        path = obj.get_absolute_url()
+        url = 'http://{domain}{path}'.format(domain=domain, path=path)
+        return url
 
 
 # class CommentSerializer(serializers.HyperlinkedModelSerializer):

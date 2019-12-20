@@ -1,6 +1,7 @@
 from django.db import models
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
+from rest_framework.reverse import reverse
 
 from accounts.models import User
 
@@ -31,3 +32,6 @@ class Comment(models.Model):
     parent = models.ForeignKey('self', related_name='parents', on_delete=models.SET_NULL, null=True, blank=True)
     body = models.CharField(max_length=100)
     created = models.DateField(auto_now_add=True)
+
+    def get_absolute_url(self):
+        return reverse("product:comment-detail", kwargs={"pk": self.id})

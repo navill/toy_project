@@ -2,6 +2,7 @@ from django.urls import path
 
 from product import views
 
+app_name = 'product'
 category_list = views.CategoryViewSet.as_view({
     'get': 'list',
     'post': 'create',
