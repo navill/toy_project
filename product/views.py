@@ -1,4 +1,5 @@
 import django_filters
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
@@ -8,7 +9,7 @@ from rest_framework.generics import *
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from config.permission import IsAdminUserOrReadOnly
+from config.permission import IsAdminUserOrReadOnly, IsOwnerOrReadOnly
 from product.models import Category, Product, Comment
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ProductDetailSerializer, \
     CommentDetailSerializer
@@ -36,7 +37,11 @@ class ProductFilter(django_filters.rest_framework.FilterSet):
 
 class CommentFilter(django_filters.rest_framework.FilterSet):
     product = django_filters.AllValuesFilter(field_name='product__name')
-    reply = django_filters.AllValuesFilter(field_name='parent')
+    user = django_filters.AllValuesFilter(field_name='user__email')
+
+    class Meta:
+        model = Comment
+        fields = ('product', 'user')
 
 
 # ViewSet
@@ -64,16 +69,27 @@ class ProductDetail(RetrieveUpdateDestroyAPIView):
 
 
 class CommentList(ListCreateAPIView):
-    queryset = Comment.objects.filter(parent=None)
+    # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     filter_backends = [DjangoFilterBackend]
     filter_class = CommentFilter
-
+    # permission_classes = (IsAuthenticatedOrReadOnly,)
     # 작성자가 아닐경우 read only, 작성자일 경우 editable
-    # permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerOrReadOnly,)
+
+    def get_queryset(self):
+        queryset = Comment.objects.filter(parent=None)
+        product = self.request.query_params.get('product')
+        user = self.request.query_params.get('user')
+        if product or user:
+            if product and user:
+                queryset = queryset.filter(Q(user__email=user) & Q(product__name=product))
+            else:
+                queryset = queryset.filter(Q(user__email=user) | Q(product__name=product))
+        return queryset
 
     def list(self, request, *args, **kwargs):
-        serializer = self.get_serializer(Comment.objects.filter(parent=None), many=True)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -93,8 +109,9 @@ class CommentList(ListCreateAPIView):
 class CommentDetail(RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentDetailSerializer
-    filter_backends = [DjangoFilterBackend]
-    filter_class = CommentFilter
+    # filter_backends = [DjangoFilterBackend]
+    # filter_class = CommentFilter
+    permission_classes = (IsOwnerOrReadOnly,)
 
 
 @api_view(['GET'])

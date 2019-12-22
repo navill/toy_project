@@ -1,11 +1,9 @@
 from rest_auth.registration.views import RegisterView
 from rest_auth.views import UserDetailsView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from accounts.models import User
 from accounts.serializers import CustomUserDetailSerializer, CustomRegisterSerializer
-
-
 # 유저 등록은 rest_auth의 RegisterView를 이용해 등록
 from config.permission import IsOwner
 

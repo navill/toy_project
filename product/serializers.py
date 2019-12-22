@@ -3,10 +3,6 @@ from rest_framework import serializers
 from product.models import Category, Product, Comment
 
 
-# class RecursiveFields(RecursiveField):
-#     def to_native(self, value):
-#         return self.parent.to_native(value)
-
 class RecursiveSerializer(serializers.Serializer):
     def to_representation(self, instance):
         serializer = self.parent.parent.__class__(instance, context=self.context)
@@ -42,8 +38,8 @@ class CommentSerializer(serializers.ModelSerializer):
         return url
 
     def get_reply(self, instance):
-        print('get_reply')
         serializer = self.__class__(instance.reply, many=True)
+        # serializer.bind('*', self) 아래와 동일한 결과
         serializer.bind('reply', self)
         return serializer.data
 
@@ -92,6 +88,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     # category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='name')
     # comments = CommentSerializer(many=True, read_only=True)
     comment_count = serializers.SerializerMethodField()
+    # CommentSerializer를 이용할 경우 comments가 중복되어 출력된다.
     comments = serializers.SerializerMethodField()
 
     class Meta:
