@@ -7,6 +7,7 @@ from accounts.serializers import CustomUserDetailSerializer, CustomRegisterSeria
 
 
 # 유저 등록은 rest_auth의 RegisterView를 이용해 등록
+from config.permission import IsOwner
 
 
 class CustomRegisterView(RegisterView):
@@ -18,8 +19,8 @@ class CustomRegisterView(RegisterView):
 class UserDetailView(UserDetailsView):
     queryset = User.objects.all()
     serializer_class = CustomUserDetailSerializer
-    # permission_classes = (IsOwner,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsOwner,)
+    # permission_classes = (IsAuthenticated,)
 
 # class UserProfileView(RetrieveUpdateAPIView):
 #     queryset = UserProfile.objects.all()

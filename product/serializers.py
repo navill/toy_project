@@ -1,52 +1,45 @@
-from drf_writable_nested import WritableNestedModelSerializer
+import functools
+
 from rest_framework import serializers
-from rest_framework.exceptions import NotAuthenticated
 
 from product.models import Category, Product, Comment
 
 
-class CategorySerializer(serializers.HyperlinkedModelSerializer):
-    products = serializers.HyperlinkedRelatedField(many=True, view_name='product-detail', read_only=True)
+def memoize(fn):
+    cache = dict()
+    print(cache)
 
-    class Meta:
-        model = Category
-        fields = ['url', 'id', 'name', 'products', 'parent']
+    @functools.wraps(fn)
+    def memoizer(*args):
+        if args not in cache:
+            cache[args] = fn(*args)
+        return cache[args]
+
+    return memoizer
+
+
+# class RecursiveFields(RecursiveField):
+#     def to_native(self, value):
+#         return self.parent.to_native(value)
+
+class RecursiveSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        serializer = self.parent.parent.__class__(instance, context=self.context)
+        return serializer.data
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(), )
     absolute_detail_url = serializers.SerializerMethodField()
+    # 최상위 댓글에 대한 하위 댓글 recursive
+    # reply: Comment의 child
+    reply = RecursiveSerializer(many=True, read_only=True)
 
-    # detail_url = serializers.URLField(source='get_absolute_url', read_only=True)
+    # reply = RecursiveFields(many=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'product', 'parent', 'body', 'absolute_detail_url']
-
-    def to_representation(self, instance):
-        data = super(CommentSerializer, self).to_representation(instance)
-        data.update({'user': instance.user.email})
-        return data
-
-    # 댓글 생성 시
-    def create(self, validated_data):
-        request = self.context['request']
-        if request.user.is_authenticated:
-            if validated_data['user']:
-                validated_data.pop('user')
-            validated_data['user'] = request.user
-        else:
-            raise NotAuthenticated("Current user is not authenticated")
-        instance = Comment.objects.create(**validated_data)
-        return instance
-
-    def update(self, instance, validated_data):
-        request = self.context['request']
-        if request.user.is_authenticated and request.user == validated_data['user']:
-            super(CommentSerializer, self).update(instance, validated_data)
-        else:
-            raise NotAuthenticated("Current user and writer do not match.")
-        return instance
+        fields = ('id', 'user', 'product', 'parent', 'body', 'parent', 'absolute_detail_url', 'reply')
 
     def get_absolute_detail_url(self, obj):
         request = self.context['request']
@@ -56,33 +49,44 @@ class CommentSerializer(serializers.ModelSerializer):
         return url
 
 
-# class CommentSerializer(serializers.HyperlinkedModelSerializer):
-#     product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
-#     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=serializers.CurrentUserDefault())
-#
-#     class Meta:
-#         model = Comment
-#         fields = ['id', 'user', 'product', 'parent', 'body']
-#
-#     def to_representation(self, instance):
-#         data = super(CommentSerializer, self).to_representation(instance)
-#         print(instance)
-#         if data['parent'] is not None:
-#             print(data)
-#         # data.update({'parent': 1123})
-#         return data
-
-
-class ProductSerializer(WritableNestedModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='name')
-    comments = CommentSerializer(many=True, read_only=True)
-    comment_count = serializers.SerializerMethodField()
+    product_detail_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'category', 'name', 'description', 'price', 'quantity', 'created', 'comment_count', 'comments']
+        fields = ['id', 'category', 'name', 'price', 'created', 'product_detail_url', ]
 
-    def get_comment_count(self, obj):
-        comment_count = obj.comments.count()
-        # if obj.comments.parent:
-        return comment_count
+    # def get_comment_count(self, obj):
+    #     comment_count = obj.comments.count()
+    #     return comment_count
+
+    def get_product_detail_url(self, obj):
+        request = self.context['request']
+        http_host = request.META['HTTP_HOST']
+        path = obj.get_absolute_url()
+        url = 'http://{http_host}{path}'.format(http_host=http_host, path=path)
+        return url
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    # category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='name')
+    comments = CommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'quantity', 'created', 'comments']
+
+    @memoize
+    def to_representation(self, instance):
+        serializer = super(ProductDetailSerializer, self).to_representation(instance)
+        return serializer
+
+
+class CategorySerializer(serializers.HyperlinkedModelSerializer):
+    products = ProductSerializer(many=True)
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'products']
+        # lookup_fields = ('products',)

@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'rest_auth.registration',
-    'django_filters'
+    'django_filters',
+    'mptt',
 ]
 # SITE_ID = 1
 
@@ -142,9 +143,9 @@ if DEBUG:
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        # admin 계정은 session authenticationd으로 적용됨
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        # admin 계정은 session&basic authenticationd으로 적용
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
 
     ],
     'DEFAULT_PERMISSION_CLASSES': (

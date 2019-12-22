@@ -1,14 +1,20 @@
 from django.db import models
-from mptt.fields import TreeForeignKey
-from mptt.models import MPTTModel
 from rest_framework.reverse import reverse
 
 from accounts.models import User
 
 
-class Category(MPTTModel):
+
+
+
+class Category(models.Model):
     name = models.CharField(max_length=100)
-    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+
+    # parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')
+
+    # class MPTTMeta:
+    #     level_attr = 'mptt_level'
+    #     # order_insertion_by = ['name']
 
     def __str__(self):
         return self.name
@@ -25,13 +31,18 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("product:product-detail", kwargs={"pk": self.id})
+
 
 class Comment(models.Model):
     product = models.ForeignKey(Product, related_name='comments', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='users', on_delete=models.CASCADE)
-    parent = models.ForeignKey('self', related_name='parents', on_delete=models.SET_NULL, null=True, blank=True)
+    parent = models.ForeignKey('self', related_name='reply', on_delete=models.SET_NULL, null=True, blank=True)
     body = models.CharField(max_length=100)
     created = models.DateField(auto_now_add=True)
 
+
     def get_absolute_url(self):
         return reverse("product:comment-detail", kwargs={"pk": self.id})
+
