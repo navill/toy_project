@@ -68,4 +68,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, related_name='profiles', on_delete=models.CASCADE)
-    address = models.CharField(max_length=100)
+    address = models.CharField(max_length=100, null=True, blank=True)

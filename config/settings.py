@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
+import datetime
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -140,13 +141,28 @@ if DEBUG:
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        # admin 계정은 session authenticationd으로 적용됨
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+
     ],
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES
+}
+# rest-auth 설정
+REST_USE_JWT = True
+
+JWT_AUTH = {
+    'JWT_SECRET_KEY': SECRET_KEY,
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'config.jwt.jwt_response_payload_handler',
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_ALLOW_REFRESH': True,  # Token Refresh 가능 여부
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    # Token 만료시간, weeks, days, hours, minutes, seconds, milliseconds, microseconds
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=1),  # Token Refresh 가능 시간
 }
 
 # 'DEFAULT_FILTER_BACKENDS': [
@@ -162,7 +178,8 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_EMAIL_FIELD = 'email'
-ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_IN_GET = False
+ACCOUNT_LOGOUT_ON_GET = False
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 AUTH_USER_MODEL = 'accounts.User'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

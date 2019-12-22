@@ -22,3 +22,10 @@ class IsAdminUserOrReadOnly(BasePermission):
                 return True
             else:
                 return False
+
+
+class IsOwner(BasePermission):
+    message = 'You do not have permission of this object.'
+
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user

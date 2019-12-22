@@ -1,5 +1,7 @@
 from django.urls import path, include
 
+# from accounts.views import UserProfileView
+
 """
     accounts/login/
     accounts/logout/
@@ -12,4 +14,5 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('rest_auth.urls')),
     path('registration/', include('rest_auth.registration.urls')),
+    # path('user_profile/<int:pk>', UserProfileView.as_view()),
 ]
