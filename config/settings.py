@@ -30,8 +30,10 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    # apps
     'product.apps.ProductConfig',
     'accounts.apps.AccountsConfig',
+    # default settings
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,16 +41,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-
+    # rest_framework
     'rest_framework',
     'rest_framework.authtoken',
+    # authentication
     'rest_auth',
-
     'allauth',
     'allauth.account',
     'rest_auth.registration',
+    # util
     'django_filters',
     'mptt',
+    # sepcification - drf_yasg
+    'drf_yasg',
 ]
 # SITE_ID = 1
 
@@ -171,6 +176,18 @@ JWT_AUTH = {
 #     'rest_framework.filters.OrderingFilter',
 #     'rest_framework.filters.SearchFilter',
 # ]
+
+# Swagger setting
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        "api_key": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+        }
+    }
+}
+
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_AUTHENTICATION_METHOD = 'email'

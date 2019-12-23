@@ -3,10 +3,11 @@ from rest_framework import serializers
 from product.models import Category, Product, Comment
 
 
-class RecursiveSerializer(serializers.Serializer):
-    def to_representation(self, instance):
-        serializer = self.parent.parent.__class__(instance, context=self.context)
-        return serializer.data
+# # 동작은 하지만 사용하지 않음
+# class RecursiveSerializer(serializers.Serializer):
+#     def to_representation(self, instance):
+#         serializer = self.parent.parent.__class__(instance, context=self.context)
+#         return serializer.data
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -14,11 +15,12 @@ class CommentSerializer(serializers.ModelSerializer):
     # absolute_detail_url = serializers.SerializerMethodField()
     # # 최상위 댓글에 대한 하위 댓글 recursive
     # # reply: Comment의 child
-    reply = RecursiveSerializer(many=True, read_only=True)
+    # reply = RecursiveSerializer(many=True, read_only=True)
 
     # --------------------------#
-    # reply = serializers.SerializerMethodField()
+    reply = serializers.SerializerMethodField()
     comment_detail_url = serializers.SerializerMethodField()
+    product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
 
     # url = serializers.HyperlinkedRelatedField(
     #     many=True,
@@ -29,6 +31,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('comment_detail_url', 'id', 'user', 'product', 'parent', 'body', 'reply')
         read_only_fields = ('id',)
+        extra_kwargs = {'id': {'required': True}}
 
     def get_comment_detail_url(self, obj):
         request = self.context['request']
@@ -49,7 +52,8 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('absolute_detail_url', 'id', 'user', 'product', 'parent', 'body')
+        fields = ('absolute_detail_url', 'id', 'user', 'product', 'parent', 'created', 'body')
+        extra_kwargs = {'id': {'required': True}}
 
     def get_absolute_detail_url(self, obj):
         request = self.context['request']
@@ -67,6 +71,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'category', 'name', 'price', 'created', 'product_detail_url', 'comment_count']
+        extra_kwargs = {'id': {'required': True}}
 
     # def get_comment_count(self, obj):
     #     comment_count = obj.comments.count()
@@ -109,7 +114,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
-    products = ProductSerializer(many=True)
+    products = ProductSerializer(many=True, read_only=True)
 
     class Meta:
         model = Category

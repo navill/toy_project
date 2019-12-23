@@ -34,7 +34,8 @@ class Comment(models.Model):
     user = models.ForeignKey(User, related_name='users', on_delete=models.CASCADE)
     parent = models.ForeignKey('self', related_name='reply', on_delete=models.CASCADE, null=True, blank=True)
     body = models.CharField(max_length=100)
-    created = models.DateField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+
 
     def get_absolute_url(self):
         return reverse("product:comment-detail", kwargs={"pk": self.id})

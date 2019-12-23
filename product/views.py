@@ -1,4 +1,3 @@
-import django_filters
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from config.permission import IsAdminUserOrReadOnly, IsOwnerOrReadOnly
+from product.filters import ProductFilter, CommentFilter
 from product.models import Category, Product, Comment
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ProductDetailSerializer, \
     CommentDetailSerializer
@@ -21,27 +21,6 @@ from product.serializers import CategorySerializer, ProductSerializer, CommentSe
     min_price & max_price: 가격 범위 필터
     date_from & date_to: 제품이 등록된 기간 필터
 """
-
-
-class ProductFilter(django_filters.rest_framework.FilterSet):
-    category = django_filters.AllValuesFilter(field_name='category__name')
-    min_price = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
-    max_price = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
-    date_from = django_filters.DateFilter(field_name='created', lookup_expr='gte')
-    date_to = django_filters.DateFilter(field_name='created', lookup_expr='lte')
-
-    class Meta:
-        model = Product
-        fields = ('category', 'name', 'min_price', 'max_price', 'date_from', 'date_to')
-
-
-class CommentFilter(django_filters.rest_framework.FilterSet):
-    product = django_filters.AllValuesFilter(field_name='product__name')
-    user = django_filters.AllValuesFilter(field_name='user__email')
-
-    class Meta:
-        model = Comment
-        fields = ('product', 'user')
 
 
 # ViewSet
@@ -57,15 +36,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductList(ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    filter_class = ProductFilter
     filter_backends = [DjangoFilterBackend]
-    permission_classes = (IsAdminUserOrReadOnly,)
+    filter_class = ProductFilter
+    # permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class ProductDetail(RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
-    permission_classes = (IsAdminUserOrReadOnly,)
+    # permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class CommentList(ListCreateAPIView):
@@ -93,10 +72,12 @@ class CommentList(ListCreateAPIView):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
+        # print('a!!!!!!!!!!!!!!!', request.data['product'])
         parent_obj = None
         if request.data['parent']:
             parent_obj = Comment.objects.get(id=request.data['parent'])
-        product = Product.objects.get(id=request.data['product'])
+
+        product = Product.objects.get(name=request.data['product'])
         Comment.objects.create(
             user=request.user,
             product=product,
