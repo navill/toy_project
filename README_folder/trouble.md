@@ -4,7 +4,7 @@
 
   ![trouble_1.png](/README_folder/image/trouble_1.png)
 
-  - 다른 뷰와 차이점을 찾던 중, 유일한 차이점을 발견함
+  - 다른 뷰와 차이점을 찾던 중, 차이점을 발견함
 
     ```python
     class CategoryViewSet(viewsets.ModelViewSet):
@@ -13,7 +13,7 @@
         # -> 속도 저하 원인이 될 수 있음
         filter_backends = [DjangoFilterBackend]
         filter_fields = ('name', 'products')
-    		...
+        ...
     ```
 
     - [DjangoFilterBackend]의 필드를 이용한 filter가 구현되어 있었음

@@ -2,5 +2,5 @@
 
 - 부족한 DRF를 공부하면서 작은 프로젝트를 진행하기 위한 Repository 입니다.
 
-- [Troubleshooting](/README_folder/README.md)
+- [Troubleshooting](/README_folder/trouble.md)
 
