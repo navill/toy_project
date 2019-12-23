@@ -1,3 +1,4 @@
+from cacheops import cached_as
 from rest_framework import serializers
 
 from product.models import Category, Product, Comment
@@ -40,6 +41,7 @@ class CommentSerializer(serializers.ModelSerializer):
         url = 'http://{http_host}{path}'.format(http_host=http_host, path=path)
         return url
 
+    @cached_as(Comment, timeout=120)
     def get_reply(self, instance):
         serializer = self.__class__(instance.reply, many=True)
         # serializer.bind('*', self) 아래와 동일한 결과
@@ -98,6 +100,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'name', 'description', 'price', 'quantity', 'created', 'comment_count', 'comments']
 
+    # @cached_as(Comment, timeout=120)
     def get_comments(self, obj):
         result = list()
         queryset = Comment.objects.filter(product_id=obj.id, parent=None)
@@ -112,7 +115,11 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
-    products = ProductSerializer(many=True, read_only=True)
+    # 굳이 category list에서 제품의 상세 정보를 제공할 필요 없음
+    # -> hyperlinked related field로 변경
+    products = serializers.HyperlinkedRelatedField(many=True,
+                                                   read_only=True,
+                                                   view_name='product:product-detail')
 
     class Meta:
         model = Category

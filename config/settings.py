@@ -52,10 +52,16 @@ INSTALLED_APPS = [
     # util
     'django_filters',
     'mptt',
+    'debug_toolbar',
+    'cacheops',
     # sepcification - drf_yasg
     'drf_yasg',
 ]
 # SITE_ID = 1
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -65,7 +71,25 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+DEBUG_TOOLBAR_PANELS = [
+    'debug_toolbar.panels.versions.VersionsPanel',
+    'debug_toolbar.panels.timer.TimerPanel',
+    'debug_toolbar.panels.settings.SettingsPanel',
+    'debug_toolbar.panels.headers.HeadersPanel',
+    'debug_toolbar.panels.request.RequestPanel',
+    'debug_toolbar.panels.sql.SQLPanel',
+    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+    'debug_toolbar.panels.templates.TemplatesPanel',
+    'debug_toolbar.panels.cache.CachePanel',
+    'debug_toolbar.panels.signals.SignalsPanel',
+    'debug_toolbar.panels.logging.LoggingPanel',
+    'debug_toolbar.panels.redirects.RedirectsPanel',
+    'debug_toolbar.panels.profiling.ProfilingPanel',
+]
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -206,4 +230,28 @@ REST_AUTH_SERIALIZERS = {
 }
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "accounts.serializers.CustomRegisterSerializer",
+}
+
+# setting - Cacheops
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "example"
+    }
+}
+CACHEOPS_REDIS = "redis://localhost:6379/1"
+CACHEOPS_DEFAULTS = {
+    'timeout': 60 * 60
+}
+CACHEOPS = {
+    'accounts.user': {'ops': ('fetch', 'get')},
+    'accounts.permission': {'ops': 'all'},
+    'product.product': {'ops': 'all'},
+    'product.category': {'ops': 'all'},
+    # '*.*': {'ops': (), 'timeout': 60 * 60},
+    '*.*': {'timeout': 60*60},
 }

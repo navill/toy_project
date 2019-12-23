@@ -1,3 +1,4 @@
+from cacheops import cached_as
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
@@ -23,8 +24,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    filter_backends = [DjangoFilterBackend]
-    filter_fields = ('name', 'products')
+    # filter_fields의 products가 페이지 로드 시, 쿼리 생성
+    # -> 속도 저하 원인이 될 수 있음
+    # filter_backends = [DjangoFilterBackend]
+    # filter_fields = ('name', 'products')
     permission_classes = (IsAdminUserOrReadOnly,)
 
 
