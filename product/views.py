@@ -3,8 +3,8 @@ from django.http import HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
-# Function View
 from rest_framework.generics import *
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -14,17 +14,13 @@ from product.models import Category, Product, Comment
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ProductDetailSerializer, \
     CommentDetailSerializer
 
-"""
-    ProductFilter
-    category: 카테고리별 필터
-    name: 제품 이름 필터
-    min_price & max_price: 가격 범위 필터
-    date_from & date_to: 제품이 등록된 기간 필터
-"""
-
 
 # ViewSet
 class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    - ModelViewSet
+        - Category에 모델에 필요한 리스트, 상세보기, 생성, 수정, 삭제
+    """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = [DjangoFilterBackend]
@@ -34,27 +30,39 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 # API based view - Response(JsonResponse 포함)
 class ProductList(ListCreateAPIView):
+    """
+    - ListCreateAPIView
+        - 제품의 리스트 및 생성
+    """
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend]
     filter_class = ProductFilter
-    # permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class ProductDetail(RetrieveUpdateDestroyAPIView):
+    """
+    - RetrieveUpdateDestroyAPIView
+        - 제품의 상세보기, 수정, 삭제
+    """
     queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
-    # permission_classes = (IsAdminUserOrReadOnly,)
+    permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class CommentList(ListCreateAPIView):
-    # queryset = Comment.objects.all()
+    """
+    - ListCreatAPIView
+        - 댓글 리스트 및 댓글 생성
+    """
     serializer_class = CommentSerializer
     filter_backends = [DjangoFilterBackend]
     filter_class = CommentFilter
-    # permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
     # 작성자가 아닐경우 read only, 작성자일 경우 editable
-    permission_classes = (IsOwnerOrReadOnly,)
+    # permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         queryset = Comment.objects.filter(parent=None)
@@ -72,7 +80,6 @@ class CommentList(ListCreateAPIView):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        # print('a!!!!!!!!!!!!!!!', request.data['product'])
         parent_obj = None
         if request.data['parent']:
             parent_obj = Comment.objects.get(id=request.data['parent'])
@@ -88,10 +95,14 @@ class CommentList(ListCreateAPIView):
 
 
 class CommentDetail(RetrieveUpdateDestroyAPIView):
+    """
+        - RetrieveUpdateDestroyAPIView
+            - 댓글의 상세보기, 수정, 삭제
+    """
     queryset = Comment.objects.all()
     serializer_class = CommentDetailSerializer
-    # filter_backends = [DjangoFilterBackend]
-    # filter_class = CommentFilter
+    filter_backends = [DjangoFilterBackend]
+    filter_class = CommentFilter
     permission_classes = (IsOwnerOrReadOnly,)
 
 
@@ -102,13 +113,3 @@ def api_root(request):
         'products': reverse('product-list', request=request),
         'comments': reverse('comment-list', request=request),
     })
-
-# class ApiRoot(generics.GenericAPIView):
-#     name = 'api-root'
-#
-#     def get(self, request, *args, **kwargs):
-#         return Response({
-#             'categories': reverse('product:category-list'),
-#             'products': reverse('product:product-list'),
-#             'comments': reverse('product:comment-list'),
-#         })

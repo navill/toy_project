@@ -52,7 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
 
-    # customize user 생성 시 반드시 필요
+    # customize superuser 생성 시 반드시 필요
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'

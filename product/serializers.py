@@ -73,9 +73,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'category', 'name', 'price', 'created', 'product_detail_url', 'comment_count']
         extra_kwargs = {'id': {'required': True}}
 
-    # def get_comment_count(self, obj):
-    #     comment_count = obj.comments.count()
-    #     return comment_count
+    def get_comment_count(self, obj):
+        comment_count = obj.comments.count()
+        return comment_count
 
     def get_product_detail_url(self, obj):
         request = self.context['request']
@@ -84,14 +84,12 @@ class ProductSerializer(serializers.ModelSerializer):
         url = 'http://{http_host}{path}'.format(http_host=http_host, path=path)
         return url
 
-    def get_comment_count(self, obj):
-        queryset = Comment.objects.filter(product=obj)
-        return queryset.count()
+    # def get_comment_count(self, obj):
+    #     queryset = Comment.objects.filter(product=obj)
+    #     return queryset.count()
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
-    # category = serializers.SlugRelatedField(queryset=Category.objects.all(), slug_field='name')
-    # comments = CommentSerializer(many=True, read_only=True)
     comment_count = serializers.SerializerMethodField()
     # CommentSerializer를 이용할 경우 comments가 중복되어 출력된다.
     comments = serializers.SerializerMethodField()
@@ -119,4 +117,3 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'products']
-        # lookup_fields = ('products',)

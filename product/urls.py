@@ -13,11 +13,6 @@ category_detail = views.CategoryViewSet.as_view({
     'patch': 'partial_update',
     'delete': 'destroy',
 })
-# comment_list = views.CommentViewSet.as_view({'get': 'list', 'post': 'create', })
-# comment_detail = views.CommentViewSet.as_view({'get': 'retrieve',
-#                                                'put': 'update',
-#                                                'patch': 'partial_update',
-#                                                'delete': 'destroy', })
 
 urlpatterns = [
     path('categories/', category_list, name='category-list'),

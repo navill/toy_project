@@ -10,7 +10,7 @@ schema_view = get_schema_view(
         title="Shop API",
         default_version='v0.01',
         description="API Specification",
-        # terms_of_service="https://www.google.com/policies/terms/",
+        terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="jihoon1493@gmail.com"),
         # license=openapi.License(name="BSD License"),
     ),

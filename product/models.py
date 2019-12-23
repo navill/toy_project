@@ -36,6 +36,5 @@ class Comment(models.Model):
     body = models.CharField(max_length=100)
     created = models.DateTimeField(auto_now_add=True)
 
-
     def get_absolute_url(self):
         return reverse("product:comment-detail", kwargs={"pk": self.id})
