@@ -90,7 +90,6 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
-
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -212,7 +211,6 @@ SWAGGER_SETTINGS = {
     }
 }
 
-
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 
@@ -243,6 +241,7 @@ CACHES = {
         "KEY_PREFIX": "example"
     }
 }
+
 CACHEOPS_REDIS = "redis://localhost:6379/1"
 CACHEOPS_DEFAULTS = {
     'timeout': 60 * 60
@@ -252,6 +251,6 @@ CACHEOPS = {
     'accounts.permission': {'ops': 'all'},
     'product.product': {'ops': 'all'},
     'product.category': {'ops': 'all'},
-    # '*.*': {'ops': (), 'timeout': 60 * 60},
-    '*.*': {'timeout': 60*60},
+    '*.*': {'ops': (), 'timeout': 60 * 60},
+    # '*.*': {'timeout': 60*60},
 }

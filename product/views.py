@@ -1,4 +1,3 @@
-from cacheops import cached_as
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from config.permission import IsAdminUserOrReadOnly, IsOwnerOrReadOnly
-from product.filters import ProductFilter, CommentFilter
+from product.filters import ProductFilter, CommentFilter, CategoryFilter
 from product.models import Category, Product, Comment
 from product.serializers import CategorySerializer, ProductSerializer, CommentSerializer, ProductDetailSerializer, \
     CommentDetailSerializer
@@ -24,10 +23,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # filter_fields의 products가 페이지 로드 시, 쿼리 생성
-    # -> 속도 저하 원인이 될 수 있음
-    # filter_backends = [DjangoFilterBackend]
-    # filter_fields = ('name', 'products')
+    filter_backends = [DjangoFilterBackend]
+    filter_class = CategoryFilter
     permission_classes = (IsAdminUserOrReadOnly,)
 
 
@@ -64,9 +61,6 @@ class CommentList(ListCreateAPIView):
     filter_class = CommentFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    # 작성자가 아닐경우 read only, 작성자일 경우 editable
-    # permission_classes = (IsOwnerOrReadOnly,)
-
     def get_queryset(self):
         queryset = Comment.objects.filter(parent=None)
         product = self.request.query_params.get('product')
@@ -99,13 +93,14 @@ class CommentList(ListCreateAPIView):
 
 class CommentDetail(RetrieveUpdateDestroyAPIView):
     """
-        - RetrieveUpdateDestroyAPIView
-            - 댓글의 상세보기, 수정, 삭제
+    - RetrieveUpdateDestroyAPIView
+        - 댓글의 상세보기, 수정, 삭제
     """
     queryset = Comment.objects.all()
     serializer_class = CommentDetailSerializer
     filter_backends = [DjangoFilterBackend]
     filter_class = CommentFilter
+    # 작성자가 아닐경우 read only, 작성자일 경우 editable
     permission_classes = (IsOwnerOrReadOnly,)
 
 

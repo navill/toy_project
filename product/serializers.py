@@ -17,17 +17,10 @@ class CommentSerializer(serializers.ModelSerializer):
     # # 최상위 댓글에 대한 하위 댓글 recursive
     # # reply: Comment의 child
     # reply = RecursiveSerializer(many=True, read_only=True)
-
-    # --------------------------#
     reply = serializers.SerializerMethodField()
     comment_detail_url = serializers.SerializerMethodField()
     product = serializers.SlugRelatedField(queryset=Product.objects.all(), slug_field='name')
 
-    # url = serializers.HyperlinkedRelatedField(
-    #     many=True,
-    #     read_only=True,
-    #     view_name='comment-detail'
-    # )
     class Meta:
         model = Comment
         fields = ('comment_detail_url', 'id', 'user', 'product', 'parent', 'body', 'reply')
@@ -86,10 +79,6 @@ class ProductSerializer(serializers.ModelSerializer):
         url = 'http://{http_host}{path}'.format(http_host=http_host, path=path)
         return url
 
-    # def get_comment_count(self, obj):
-    #     queryset = Comment.objects.filter(product=obj)
-    #     return queryset.count()
-
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
@@ -100,7 +89,6 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'name', 'description', 'price', 'quantity', 'created', 'comment_count', 'comments']
 
-    # @cached_as(Comment, timeout=120)
     def get_comments(self, obj):
         result = list()
         queryset = Comment.objects.filter(product_id=obj.id, parent=None)

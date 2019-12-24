@@ -1,6 +1,6 @@
 import django_filters
 
-from product.models import Product, Comment
+from product.models import Product, Comment, Category
 
 
 class ProductFilter(django_filters.rest_framework.FilterSet):
@@ -22,3 +22,11 @@ class CommentFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Comment
         fields = ('product', 'user')
+
+
+class CategoryFilter(django_filters.rest_framework.FilterSet):
+    name = django_filters.AllValuesFilter(field_name='name')
+
+    class Meta:
+        model = Category
+        fields = ('name',)
