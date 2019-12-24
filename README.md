@@ -14,5 +14,6 @@
     - djangorestframework-recursive
     - drf-yasg
   - Redis
+- [Notion] [주요 함수 및 코드 요약](https://www.notion.so/afmadadans/Toy-Proejct-DRF-81af08aaccf04e209046808b43f1170f)
 - [Troubleshooting](/README_folder/trouble.md)
 
