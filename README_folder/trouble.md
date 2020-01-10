@@ -38,7 +38,8 @@
 
   
 
-- *~~Redis 및 CacheOps를 이용해 문제 해결~~ select_related & prefetch_related로 해결 
+- *~~Redis 및 CacheOps를 이용해 문제 해결~~ select_related & prefetch_related를 이용할 경우 related object에 대한 중복 쿼리를 제거할 수 있음
+-> 변경 후 정리할 
 
   \[Github] [Redis 정리](https://github.com/navill/port_django_shop/blob/master/README_Folder/redis.md) 
 
