@@ -38,7 +38,7 @@
 
   
 
-- Redis 및 CacheOps를 이용해 문제 해결
+- *~~Redis 및 CacheOps를 이용해 문제 해결~~ select_related & prefetch_related로 해결 
 
   \[Github] [Redis 정리](https://github.com/navill/port_django_shop/blob/master/README_Folder/redis.md) 
 
