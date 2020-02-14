@@ -74,5 +74,17 @@
 
   - select_related를 이용해 Category를, prefetch_related를 이용해 Comment를 한 번의 쿼리를 이용해 가져옴
 
+    ```python
+    class ProductList(ListCreateAPIView):
+        serializer_class = ProductSerializer
+        filter_backends = [DjangoFilterBackend]
+        filter_class = ProductFilter
+        permission_classes = (IsAdminUserOrReadOnly,)
+    
+        def get_queryset(self):
+            qs = Product.objects.select_related('category').prefetch_related('comments').all()
+            return qs
+    ```
+
     ![solution_2](/README_folder/image/solution_2.png)
 
